@@ -15,7 +15,7 @@ import com.Clover.springboot.Model.Student;
 @RestController
 public class JsonController {
 	
-	@RequestMapping(value = "/getStudents", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/api/getStudents", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody List<Student> getStudents() {
 	    
 		try (Session session = HibernateUtil.getSessionFactory().openSession()) {

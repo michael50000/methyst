@@ -3,14 +3,19 @@ package com.Clover.springboot.Security;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.LdapShaPasswordEncoder;
 
+
 @Configuration
+@Order(1)
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
@@ -30,48 +35,28 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-	http
-	.authorizeRequests()
-	.anyRequest().fullyAuthenticated()
-	.and()
-	.formLogin();
+		 http
+         .antMatcher("/**")
+             .authorizeRequests()
+             .antMatchers("/oauth/authorize**", "/login**", "/error**")
+             .permitAll()
+         .and()
+             .authorizeRequests()
+             .anyRequest().authenticated()
+         .and()
+         .formLogin().permitAll();
 	}
 	
 	@Override
-	public void configure(AuthenticationManagerBuilder auth) throws Exception {
-		logger.warn("Ldap Enab:="+ldapEnabled);
-		/*  auth
-		 .ldapAuthentication()
-		 .contextSource()
-		 .url(ldapUrls + ldapBaseDn)
-		 .managerDn(ldapSecurityPrincipal)
-		 .managerPassword(ldapPrincipalPassword)
-		 .and()
-		 .userDnPatterns(ldapUserDnPattern);*/
-		
-		if(Boolean.parseBoolean(ldapEnabled)){
-			  auth
-			 .ldapAuthentication()
-			 .contextSource()
-			 .url(ldapUrls + ldapBaseDn)
-			 .managerDn(ldapSecurityPrincipal)
-			 .managerPassword(ldapPrincipalPassword)
-			 .and()
-			 .userDnPatterns(ldapUserDnPattern);
-			
-		}else{
-			auth
-			.inMemoryAuthentication()
-			.withUser("user")
-			.password("{noop}user")
-			.roles("USER")
-			.and()
-			.withUser("admin")
-			.password("{noop}admin")
-			.roles("ADMIN");
-			
-		}
-	}
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth
+            .inMemoryAuthentication()
+            .withUser("humptydumpty").password(passwordEncoder().encode("123456")).roles("USER");
+    }
+	@Bean
+    public BCryptPasswordEncoder passwordEncoder(){ 
+        return new BCryptPasswordEncoder(); 
+    }
 	
 	
 
